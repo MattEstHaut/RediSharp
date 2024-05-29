@@ -1,0 +1,35 @@
+name: test
+
+on:
+  workflow_dispatch:
+  workflow_call:
+  pull_request:
+    paths:
+      - "**.cs"
+      - "**.csproj"
+      - "**.sln"
+
+env:
+  DOTNET_VERSION: "8.0.300"
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configuration de .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      
+      - name: Formatage du code
+        run: dotnet format --verify-no-changes
+
+      - name: Build de la solution
+        run: dotnet build
+
+      - name: Test de la solution
+        run: dotnet test --no-build

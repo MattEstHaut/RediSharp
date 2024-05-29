@@ -1,0 +1,18 @@
+changelog:
+  exclude:
+    labels:
+      - duplicate
+      - help wanted
+      - question
+      - wontfix
+  categories:
+    - title: ⭐ Nouvelles fonctionnalités
+      labels:
+        - enhancement
+    - title: 🐛 Corrections de bugs
+      labels:
+        - bug
+        - invalid
+    - title: 📚 Documentation
+      labels:
+        - documentation
