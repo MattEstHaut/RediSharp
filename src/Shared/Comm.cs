@@ -5,44 +5,44 @@ namespace Shared.Comm;
 
 public abstract class Base : IDisposable
 {
-  protected readonly TcpClient _socket;
-  protected readonly StreamReader _reader;
-  protected readonly StreamWriter _writer;
+    protected readonly TcpClient _socket;
+    protected readonly StreamReader _reader;
+    protected readonly StreamWriter _writer;
 
-  public Base(TcpClient socket)
-  {
-    _socket = socket;
-    var stream = socket.GetStream();
-    _reader = new StreamReader(stream);
-    _writer = new StreamWriter(stream) { AutoFlush = true };
-  }
+    public Base(TcpClient socket)
+    {
+        _socket = socket;
+        var stream = socket.GetStream();
+        _reader = new StreamReader(stream);
+        _writer = new StreamWriter(stream) { AutoFlush = true };
+    }
 
-  public void Dispose()
-  {
-    _reader.Dispose();
-    _writer.Dispose();
-    _socket.Dispose();
-    GC.SuppressFinalize(this);
-  }
+    public void Dispose()
+    {
+        _reader.Dispose();
+        _writer.Dispose();
+        _socket.Dispose();
+        GC.SuppressFinalize(this);
+    }
 }
 
 public class Server : Base
 {
-  public Server(TcpClient socket) : base(socket) { }
+    public Server(TcpClient socket) : base(socket) { }
 
-  public Item Send(params string[] command)
-  {
-    _writer.Write(((ItemArray)command).Encode());
-    return Item.Decode(_reader);
-  }
+    public Item Send(params string[] command)
+    {
+        _writer.Write(((ItemArray)command).Encode());
+        return Item.Decode(_reader);
+    }
 }
 
 public class Client : Base
 {
-  public Client(TcpClient socket) : base(socket) { }
+    public Client(TcpClient socket) : base(socket) { }
 
 
-  public void Send(Item response) => _writer.Write(response.Encode());
+    public void Send(Item response) => _writer.Write(response.Encode());
 
-  public Item Read() => Item.Decode(_reader);
+    public Item Read() => Item.Decode(_reader);
 }
