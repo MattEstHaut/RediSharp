@@ -36,3 +36,13 @@ public class Server : Base
     return Item.Decode(_reader);
   }
 }
+
+public class Client : Base
+{
+  public Client(TcpClient socket) : base(socket) { }
+
+
+  public void Send(Item response) => _writer.Write(response.Encode());
+
+  public Item Read() => Item.Decode(_reader);
+}
