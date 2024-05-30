@@ -127,6 +127,16 @@ public class ItemArray : Item
 
   public new static ItemArray Decode(StreamReader reader)
   {
-    throw new NotImplementedException();
+    if ((char)reader.Read() != '*')
+      throw new Exception("Invalid item array header");
+
+    int size = Size(reader);
+    if (size < 0) throw new Exception("Size less than zero");
+    var items = new List<Item>();
+
+    for (int i = 0; i < size; i++)
+      items.Add(Item.Decode(reader));
+
+    return new ItemArray(items.ToArray());
   }
 }
