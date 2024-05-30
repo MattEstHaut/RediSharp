@@ -6,7 +6,17 @@ public abstract class Item
 {
   static public Item Decode(StreamReader reader)
   {
-    throw new NotImplementedException();
+    char type = (char)reader.Peek();
+
+    return type switch
+    {
+      '+' => SimpleString.Decode(reader),
+      '-' => SimpleError.Decode(reader),
+      '_' => Null.Decode(reader),
+      '*' => ItemArray.Decode(reader),
+      '$' => BulkString.Decode(reader),
+      _ => throw new Exception("Invalid item type")
+    };
   }
 
   public abstract string Encode();
