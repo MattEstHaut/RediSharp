@@ -58,7 +58,13 @@ public class SimpleString : BulkString
 
   public new static SimpleString Decode(StreamReader reader)
   {
-    throw new NotImplementedException();
+    if ((char)reader.Read() != '+')
+      throw new Exception("Invalid simple string header");
+
+    if (reader.ReadLine() is not string data)
+      throw new Exception("Unable to read simple string");
+
+    return new SimpleString(data);
   }
 }
 
