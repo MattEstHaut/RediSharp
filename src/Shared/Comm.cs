@@ -1,4 +1,5 @@
 using System.Net.Sockets;
+using Shared.Resp;
 
 namespace Shared.Comm;
 
@@ -22,5 +23,16 @@ public abstract class Base : IDisposable
     _writer.Dispose();
     _socket.Dispose();
     GC.SuppressFinalize(this);
+  }
+}
+
+public class Server : Base
+{
+  public Server(TcpClient socket) : base(socket) { }
+
+  public Item Send(params string[] command)
+  {
+    _writer.Write(((ItemArray)command).Encode());
+    return Item.Decode(_reader);
   }
 }
