@@ -36,7 +36,17 @@ public class BulkString : Item
 
   public new static BulkString Decode(StreamReader reader)
   {
-    throw new NotImplementedException();
+    if ((char)reader.Read() != '$')
+      throw new Exception("Invalid bulk string header");
+
+    int size = Size(reader);
+    if (size < 0) throw new Exception("Size less than zero");
+
+    char[] buffer = new char[size];
+    if (reader.Read(buffer) < size) throw new EndOfStreamException();
+    _ = reader.ReadLine();
+
+    return new BulkString(new string(buffer));
   }
 }
 
