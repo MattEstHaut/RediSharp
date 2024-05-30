@@ -76,7 +76,13 @@ public class SimpleError : BulkString
 
   public new static SimpleError Decode(StreamReader reader)
   {
-    throw new NotImplementedException();
+    if ((char)reader.Read() != '-')
+      throw new Exception("Invalid simple error header");
+
+    if (reader.ReadLine() is not string data)
+      throw new Exception("Unable to read simple error");
+
+    return new SimpleError(data);
   }
 }
 
