@@ -28,6 +28,15 @@ public abstract class Item
 
     return size;
   }
+
+  public static implicit operator Item(string data) => new BulkString(data);
+
+  public static implicit operator Item(Item[] items) => new ItemArray(items);
+
+  public static implicit operator Item(string[] data)
+  {
+    return new ItemArray(data.Select(d => new BulkString(d)).ToArray());
+  }
 }
 
 public class BulkString : Item
