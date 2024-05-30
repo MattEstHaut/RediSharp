@@ -94,7 +94,10 @@ public class Null : Item
 
   public new static Null Decode(StreamReader reader)
   {
-    throw new NotImplementedException();
+    if ((char)reader.Read() != '_')
+      throw new Exception("Invalid null header");
+    _ = reader.ReadLine();
+    return new Null();
   }
 }
 
