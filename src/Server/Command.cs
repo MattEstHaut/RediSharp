@@ -16,7 +16,7 @@ public abstract class Command
     {
       "PING" => new PingCommand(db),
       "ECHO" => new EchoCommand(db),
-      _ => new ErrorCommand(db),
+      _ => new UnknownCommand(db),
     };
   }
 }
@@ -54,5 +54,15 @@ public class ErrorCommand : Command
   public override Item execute(params string[] args)
   {
     return new SimpleError("Unknown error");
+  }
+}
+
+public class UnknownCommand : Command
+{
+  public UnknownCommand(Database db) : base(db) { }
+
+  public override Item execute(params string[] args)
+  {
+    return new SimpleError("Unknown command");
   }
 }
