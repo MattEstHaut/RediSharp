@@ -1,7 +1,7 @@
 using System.Text;
 using Shared.Resp;
 
-namespace Shared.unitTests;
+namespace Shared.UnitTests;
 
 public class RespTests
 {
