@@ -104,3 +104,17 @@ public class GetCommand : Command
         return value == null ? new Null() : new BulkString(value);
     }
 }
+
+public class DelCommand : Command
+{
+    public DelCommand(Database db) : base(db) { }
+
+    public override Item execute(params string[] args)
+    {
+        if (args.Length != 1)
+            return new SimpleError("Expected 1 argument");
+
+        _db.Del(args[0]);
+        return new SimpleString("OK");
+    }
+}
