@@ -9,6 +9,16 @@ public abstract class Command
   public Command(Database db) { _db = db; }
 
   public abstract Item execute(params string[] args);
+
+  public static Command Create(string command, Database db)
+  {
+    return command.ToUpper() switch
+    {
+      "PING" => new PingCommand(db),
+      "ECHO" => new EchoCommand(db),
+      _ => new ErrorCommand(db),
+    };
+  }
 }
 
 public class PingCommand : Command
