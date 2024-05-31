@@ -16,6 +16,9 @@ public abstract class Command
         {
             "PING" => new PingCommand(db),
             "ECHO" => new EchoCommand(db),
+            "SET" => new SetCommand(db),
+            "GET" => new GetCommand(db),
+            "DEL" => new DelCommand(db),
             _ => new UnknownCommand(db),
         };
     }
@@ -64,5 +67,57 @@ public class UnknownCommand : Command
     public override Item execute(params string[] args)
     {
         return new SimpleError("Unknown command");
+    }
+}
+
+public class SetCommand : Command
+{
+    public SetCommand(Database db) : base(db) { }
+
+    public override Item execute(params string[] args)
+    {
+        switch (args.Length)
+        {
+            case 2:
+                _db.Set(args[0], args[1]);
+                return new SimpleString("OK");
+            case 4:
+                if (args[2].ToUpper() != "EX")
+                    return new SimpleError("Expected EX keyword");
+                if (!int.TryParse(args[3], out int ms))
+                    return new SimpleError("Expected integer after EX keyword");
+                _db.Set(args[0], args[1], ms);
+                return new SimpleString("OK");
+            default:
+                return new SimpleError("Expected 2 or 4 arguments");
+        }
+    }
+}
+
+public class GetCommand : Command
+{
+    public GetCommand(Database db) : base(db) { }
+
+    public override Item execute(params string[] args)
+    {
+        if (args.Length != 1)
+            return new SimpleError("Expected 1 argument");
+
+        var value = _db.Get(args[0]);
+        return value == null ? new Null() : new BulkString(value);
+    }
+}
+
+public class DelCommand : Command
+{
+    public DelCommand(Database db) : base(db) { }
+
+    public override Item execute(params string[] args)
+    {
+        if (args.Length != 1)
+            return new SimpleError("Expected 1 argument");
+
+        _db.Del(args[0]);
+        return new SimpleString("OK");
     }
 }
