@@ -16,6 +16,9 @@ public abstract class Command
         {
             "PING" => new PingCommand(db),
             "ECHO" => new EchoCommand(db),
+            "SET" => new SetCommand(db),
+            "GET" => new GetCommand(db),
+            "DEL" => new DelCommand(db),
             _ => new UnknownCommand(db),
         };
     }
