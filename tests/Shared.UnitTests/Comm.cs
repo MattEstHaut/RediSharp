@@ -2,7 +2,7 @@ using System.Net.Sockets;
 using Shared.Comm;
 using Shared.Resp;
 
-namespace Shared.unitTests;
+namespace Shared.UnitTests;
 
 public class CommTests
 {
