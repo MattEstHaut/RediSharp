@@ -47,8 +47,7 @@ public class BulkString : Item
 
     public override string Encode()
     {
-        int len = Encoding.UTF8.GetByteCount(Data);
-        return $"${len}\r\n{Data}\r\n";
+        return $"${Data.Length}\r\n{Data}\r\n";
     }
 
     public override string ToString() => Data;
