@@ -90,3 +90,17 @@ public class SetCommand : Command
         }
     }
 }
+
+public class GetCommand : Command
+{
+    public GetCommand(Database db) : base(db) { }
+
+    public override Item execute(params string[] args)
+    {
+        if (args.Length != 1)
+            return new SimpleError("Expected 1 argument");
+
+        var value = _db.Get(args[0]);
+        return value == null ? new Null() : new BulkString(value);
+    }
+}
