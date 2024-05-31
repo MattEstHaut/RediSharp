@@ -23,3 +23,16 @@ public class PingCommand : Command
     return new SimpleString("PONG");
   }
 }
+
+public class EchoCommand : Command
+{
+  public EchoCommand(Database db) : base(db) { }
+
+  public override Item execute(params string[] args)
+  {
+    if (args.Length != 1)
+      return new SimpleError("Expected 1 argument");
+
+    return new SimpleString(args[0]);
+  }
+}
