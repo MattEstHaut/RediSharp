@@ -36,3 +36,15 @@ public class EchoCommand : Command
     return new SimpleString(args[0]);
   }
 }
+
+public class ErrorCommand : Command
+{
+  public ErrorCommand(Database db) : base(db) { }
+
+  public override Item execute(params string[] args)
+  {
+    if (args.Length > 0)
+      return new SimpleError(args[0]);
+    return new SimpleError("Unknown error");
+  }
+}
