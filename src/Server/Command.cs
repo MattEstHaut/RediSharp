@@ -53,8 +53,6 @@ public class ErrorCommand : Command
 
   public override Item execute(params string[] args)
   {
-    if (args.Length > 0)
-      return new SimpleError(args[0]);
     return new SimpleError("Unknown error");
   }
 }
