@@ -180,3 +180,26 @@ public class Integer : Item
         return new Integer(value);
     }
 }
+
+public class Boolean : Item {
+    public bool Value { get; }
+
+    public Boolean(bool value) { Value = value; }
+
+    public override string Encode() => $"#{(Value ? 't' : 'f')}\r\n";
+
+    public override string ToString() => Value.ToString();
+
+    public new static Boolean Decode(StreamReader reader)
+    {
+        if ((char)reader.Read() != '#')
+            throw new Exception("Invalid boolean header");
+
+        char value = (char)reader.Read();
+        if (value != 't' && value != 'f')
+            throw new Exception("Invalid boolean value");
+
+        _ = reader.ReadLine();
+        return new Boolean(value == 't');
+    }
+}
