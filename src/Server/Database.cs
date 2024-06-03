@@ -1,12 +1,17 @@
 using System.Collections.Concurrent;
 
-public class Database
+public class Database : IDisposable
 {
     private readonly ConcurrentDictionary<string, string> _data = new();
     private readonly ConcurrentDictionary<string, DateTimeOffset> _ex = new();
     private readonly object _lock = new();
+    private readonly object _cleanLock = new();
+    private CancellationTokenSource _cts = new();
 
-    public Database() { }
+    public Database()
+    {
+        _ = Task.Run(Clean);
+    }
 
     public void Set(string key, string value)
     {
@@ -53,5 +58,22 @@ public class Database
 
             return _data.TryGetValue(key, out var value) ? value : null;
         }
+    }
+
+    private void Clean()
+    {
+        while (!_cts.Token.IsCancellationRequested)
+        {
+            foreach (var (key, expire) in _ex)
+            {
+                if (expire < DateTimeOffset.UtcNow)
+                    lock (_cleanLock) Del(key);
+            }
+        }
+    }
+
+    public void Dispose()
+    {
+        _cts.Cancel();
     }
 }
