@@ -5,13 +5,7 @@ public class Database
     private ConcurrentDictionary<string, string> _data = new();
     private ConcurrentDictionary<string, DateTimeOffset> _ex = new();
 
-    public Database(long cleanupInterval = 1000)
-    {
-        System.Timers.Timer timer = new(cleanupInterval);
-        timer.Elapsed += (sender, e) => Clean();
-        timer.AutoReset = true;
-        timer.Start();
-    }
+    public Database() { }
 
     public void Set(string key, string value)
     {
@@ -43,12 +37,5 @@ public class Database
             Del(key);
 
         return _data.TryGetValue(key, out var value) ? value : null;
-    }
-
-    private void Clean()
-    {
-        foreach (var (key, expire) in _ex)
-            if (expire < DateTimeOffset.UtcNow)
-                Del(key);
     }
 }
