@@ -19,6 +19,8 @@ public abstract class Command
             "SET" => new SetCommand(db),
             "GET" => new GetCommand(db),
             "DEL" => new DelCommand(db),
+            "LOCK" => new LockCommand(db),
+            "UNLOCK" => new UnlockCommand(db),
             _ => new UnknownCommand(db),
         };
     }
@@ -118,6 +120,56 @@ public class DelCommand : Command
             return new SimpleError("Expected 1 argument");
 
         _db.Del(args[0]);
+        return new SimpleString("OK");
+    }
+}
+
+public class LockCommand : Command
+{
+    public LockCommand(Database db) : base(db) { }
+
+    public override Item execute(params string[] args)
+    {
+        if (args.Length != 1)
+            return new SimpleError("Expected 1 argument");
+
+        _db.Lock();
+        var mut = _db.Get(args[0]);
+        if (mut == null || mut == "f")
+            _db.Set(args[0], "l");
+        _db.Unlock();
+
+        switch (mut)
+        {
+            case null:
+                return new SimpleString("OK");
+            case "f":
+                return new SimpleString("OK");
+            case "l":
+                return new SimpleError("Key is already locked");
+            default:
+                return new SimpleError("Key is already set");
+        }
+    }
+}
+
+public class UnlockCommand : Command
+{
+    public UnlockCommand(Database db) : base(db) { }
+
+    public override Item execute(params string[] args)
+    {
+        if (args.Length != 1)
+            return new SimpleError("Expected 1 argument");
+
+        _db.Lock();
+        var mut = _db.Get(args[0]);
+        if (mut == "l") _db.Set(args[0], "f");
+        _db.Unlock();
+
+        if (mut != "l" && mut != "f")
+            return new SimpleError("Key is not a lock");
+
         return new SimpleString("OK");
     }
 }
