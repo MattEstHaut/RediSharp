@@ -1,54 +1,87 @@
 using System.Collections.Concurrent;
 
-public class Database
+public class Database : IDisposable
 {
-    private ConcurrentDictionary<string, string> _data = new();
-    private ConcurrentDictionary<string, DateTimeOffset> _ex = new();
+    private readonly ConcurrentDictionary<string, string> _data = new();
+    private readonly ConcurrentDictionary<string, DateTimeOffset> _ex = new();
+    private readonly object _lock = new();
+    private readonly object _cleanLock = new();
+    private CancellationTokenSource _cts = new();
 
-    public Database(long cleanupInterval = 1000)
+    public Database()
     {
-        System.Timers.Timer timer = new(cleanupInterval);
-        timer.Elapsed += (sender, e) => Clean();
-        timer.AutoReset = true;
-        timer.Start();
+        _ = Task.Run(Clean);
     }
 
     public void Set(string key, string value)
     {
-        _data[key] = value;
-        _ex.Remove(key, out _);
+        lock (_lock)
+        {
+            _data[key] = value;
+            _ex.Remove(key, out _);
+        }
     }
 
     public void Set(string key, string value, long ex)
     {
-        _data[key] = value;
-        _ex[key] = DateTimeOffset.UtcNow.AddMilliseconds(ex);
+        lock (_lock)
+        {
+            _data[key] = value;
+            _ex[key] = DateTimeOffset.UtcNow.AddMilliseconds(ex);
+        }
     }
 
     public void Set(string key, long ex)
     {
-        if (_data.ContainsKey(key))
-            _ex[key] = DateTimeOffset.UtcNow.AddMilliseconds(ex);
+        lock (_lock)
+        {
+            if (_data.ContainsKey(key))
+                _ex[key] = DateTimeOffset.UtcNow.AddMilliseconds(ex);
+        }
     }
 
     public void Del(string key)
     {
-        _data.Remove(key, out _);
-        _ex.Remove(key, out _);
+        lock (_lock)
+        {
+            _data.Remove(key, out _);
+            _ex.Remove(key, out _);
+        }
     }
 
     public string? Get(string key)
     {
-        if (_ex.TryGetValue(key, out var expire) && expire < DateTimeOffset.UtcNow)
-            Del(key);
+        lock (_lock)
+        {
+            if (_ex.TryGetValue(key, out var expire) && expire < DateTimeOffset.UtcNow)
+                Del(key);
 
-        return _data.TryGetValue(key, out var value) ? value : null;
+            return _data.TryGetValue(key, out var value) ? value : null;
+        }
     }
+
+    public void Lock() => Monitor.Enter(_cleanLock);
+
+    public void Unlock() => Monitor.Exit(_cleanLock);
 
     private void Clean()
     {
-        foreach (var (key, expire) in _ex)
-            if (expire < DateTimeOffset.UtcNow)
-                Del(key);
+        while (!_cts.Token.IsCancellationRequested)
+        {
+            foreach (var (key, expire) in _ex)
+            {
+                if (expire < DateTimeOffset.UtcNow)
+                    lock (_cleanLock) Del(key);
+            }
+        }
+    }
+
+    public void Dispose()
+    {
+        _cts.Cancel();
+        _cts.Dispose();
+        _data.Clear();
+        _ex.Clear();
+        GC.SuppressFinalize(this);
     }
 }
