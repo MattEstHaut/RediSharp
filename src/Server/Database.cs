@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using Shared.Resp;
 
 public class Database : IDisposable
 {
@@ -7,6 +8,7 @@ public class Database : IDisposable
     private readonly object _lock = new();
     private readonly object _cleanLock = new();
     private CancellationTokenSource _cts = new();
+    private Timer? _timer;
 
     public Database()
     {
@@ -76,12 +78,86 @@ public class Database : IDisposable
         }
     }
 
+    public Item Encode()
+    {
+        var db = new Dictionary<Item, Item>();
+        var data = new Dictionary<Item, Item>();
+        var ex = new Dictionary<Item, Item>();
+
+        lock (_lock)
+        {
+            foreach (var (key, value) in _data)
+                data[new BulkString(key)] = new BulkString(value);
+
+            foreach (var (key, value) in _ex)
+                ex[new BulkString(key)] = new Integer(value.ToUnixTimeMilliseconds());
+        }
+
+        db[new BulkString("data")] = new Map(data);
+        db[new BulkString("ex")] = new Map(ex);
+        return new Map(db);
+    }
+
+    public static Database Decode(Item item)
+    {
+        if (item is not Map map)
+            throw new ArgumentException("Expected map");
+
+        var dict = new Dictionary<string, Item>();
+        foreach (var (key, value) in map.Items)
+            dict[key.ToString() ?? ""] = value;
+
+        if (!dict.TryGetValue("data", out var data) || data is not Map dataMap)
+            throw new ArgumentException("Expected data map");
+
+        if (!dict.TryGetValue("ex", out var ex) || ex is not Map exMap)
+            throw new ArgumentException("Expected ex map");
+
+        var db = new Database();
+        db.Lock();
+
+        foreach (var (key, value) in dataMap.Items)
+            db._data[key.ToString() ?? ""] = value.ToString() ?? "";
+
+        foreach (var (key, value) in exMap.Items)
+        {
+            if (value is not Integer i) throw new ArgumentException("Expected integer");
+            db._ex[key.ToString() ?? ""] = DateTimeOffset.FromUnixTimeMilliseconds(i.Value);
+        }
+
+        db.Unlock();
+        return db;
+    }
+
+    public void Save(string path)
+    {
+        File.WriteAllText(path + ".tmp", Encode().Encode());
+        File.Create(path).Close();
+        File.Replace(path + ".tmp", path, null);
+    }
+
+    public static Database Load(string path)
+    {
+        using var file = File.OpenRead(path);
+        using var reader = new StreamReader(file);
+        return Decode(Item.Decode(reader));
+    }
+
+    public static Database Link(string? path, int saveInterval)
+    {
+        if (path == null) return new Database();
+        var db = File.Exists(path) ? Load(path) : new Database();
+        db._timer = new Timer(_ => db.Save(path), null, 0, saveInterval);
+        return db;
+    }
+
     public void Dispose()
     {
         _cts.Cancel();
         _cts.Dispose();
         _data.Clear();
         _ex.Clear();
+        _timer?.Dispose();
         GC.SuppressFinalize(this);
     }
 }
