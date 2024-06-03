@@ -135,21 +135,11 @@ public class LockCommand : Command
 
         _db.Lock();
         var mut = _db.Get(args[0]);
-        if (mut == null || mut == "f")
-            _db.Set(args[0], "l");
+        if (mut == null) _db.Set(args[0], "locked");
         _db.Unlock();
 
-        switch (mut)
-        {
-            case null:
-                return new SimpleString("OK");
-            case "f":
-                return new SimpleString("OK");
-            case "l":
-                return new SimpleError("Key is already locked");
-            default:
-                return new SimpleError("Key is already set");
-        }
+        if (mut == null) return new SimpleString("OK");
+        return new SimpleError("Key is already locked");
     }
 }
 
@@ -162,13 +152,7 @@ public class UnlockCommand : Command
         if (args.Length != 1)
             return new SimpleError("Expected 1 argument");
 
-        _db.Lock();
-        var mut = _db.Get(args[0]);
-        if (mut == "l") _db.Set(args[0], "f");
-        _db.Unlock();
-
-        if (mut != "l" && mut != "f")
-            return new SimpleError("Key is not a lock");
+        _db.Del(args[0]);
 
         return new SimpleString("OK");
     }
