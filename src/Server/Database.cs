@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using Shared.Resp;
 
 public class Database : IDisposable
 {
@@ -74,6 +75,57 @@ public class Database : IDisposable
                     lock (_cleanLock) Del(key);
             }
         }
+    }
+
+    public Item Encode()
+    {
+        var db = new Dictionary<Item, Item>();
+        var data = new Dictionary<Item, Item>();
+        var ex = new Dictionary<Item, Item>();
+
+        lock (_lock)
+        {
+            foreach (var (key, value) in _data)
+                data[new BulkString(key)] = new BulkString(value);
+
+            foreach (var (key, value) in _ex)
+                ex[new BulkString(key)] = new Integer(value.ToUnixTimeMilliseconds());
+        }
+
+        db[new BulkString("data")] = new Map(data);
+        db[new BulkString("ex")] = new Map(ex);
+        return new Map(db);
+    }
+
+    public static Database Decode(Item item)
+    {
+        if (item is not Map map)
+            throw new ArgumentException("Expected map");
+
+        var dict = new Dictionary<string, Item>();
+        foreach (var (key, value) in map.Items)
+            dict[key.ToString() ?? ""] = value;
+
+        if (!dict.TryGetValue("data", out var data) || data is not Map dataMap)
+            throw new ArgumentException("Expected data map");
+
+        if (!dict.TryGetValue("ex", out var ex) || ex is not Map exMap)
+            throw new ArgumentException("Expected ex map");
+
+        var db = new Database();
+        db.Lock();
+
+        foreach (var (key, value) in dataMap.Items)
+            db._data[key.ToString() ?? ""] = value.ToString() ?? "";
+
+        foreach (var (key, value) in exMap.Items)
+        {
+            if (value is not Integer i) throw new ArgumentException("Expected integer");
+            db._ex[key.ToString() ?? ""] = DateTimeOffset.FromUnixTimeMilliseconds(i.Value);
+        }
+
+        db.Unlock();
+        return db;
     }
 
     public void Dispose()
