@@ -1,7 +1,6 @@
-﻿int port = 6379;
+﻿var arguments = new ArgParser(args);
 
-if (args.Length > 0) port = int.Parse(args[0]);
+var database = Database.Link(arguments.Path, arguments.SaveInterval);
+var server = new Server(arguments.Port, database);
 
-var database = new Database();
-var server = new Server(port, database);
 server.Run();
