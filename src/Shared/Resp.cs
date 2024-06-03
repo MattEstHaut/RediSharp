@@ -15,6 +15,9 @@ public abstract class Item
             '_' => Null.Decode(reader),
             '*' => ItemArray.Decode(reader),
             '$' => BulkString.Decode(reader),
+            ':' => Integer.Decode(reader),
+            '#' => Boolean.Decode(reader),
+            '%' => Map.Decode(reader),
             _ => throw new Exception("Invalid item type")
         };
     }
@@ -156,5 +159,111 @@ public class ItemArray : Item
             items.Add(Item.Decode(reader));
 
         return new ItemArray(items.ToArray());
+    }
+}
+
+public class Integer : Item
+{
+    public long Value { get; }
+
+    public Integer(long value) { Value = value; }
+
+    public override string Encode() => $":{Value}\r\n";
+
+    public override string ToString() => Value.ToString();
+
+    public new static Integer Decode(StreamReader reader)
+    {
+        if ((char)reader.Read() != ':')
+            throw new Exception("Invalid integer header");
+
+        if (!long.TryParse(reader.ReadLine(), out long value))
+            throw new Exception("Unable to parse integer");
+
+        return new Integer(value);
+    }
+}
+
+public class Boolean : Item
+{
+    public bool Value { get; }
+
+    public Boolean(bool value) { Value = value; }
+
+    public override string Encode() => $"#{(Value ? 't' : 'f')}\r\n";
+
+    public override string ToString() => Value.ToString();
+
+    public new static Boolean Decode(StreamReader reader)
+    {
+        if ((char)reader.Read() != '#')
+            throw new Exception("Invalid boolean header");
+
+        char value = (char)reader.Read();
+        if (value != 't' && value != 'f')
+            throw new Exception("Invalid boolean value");
+
+        _ = reader.ReadLine();
+        return new Boolean(value == 't');
+    }
+}
+
+public class Map : Item
+{
+    public Dictionary<Item, Item> Items { get; } = new Dictionary<Item, Item>();
+
+    public Map() { }
+
+    public Map(Dictionary<Item, Item> items)
+    {
+        Items = items.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+    }
+
+    public override string ToString()
+    {
+        var sb = new StringBuilder();
+        sb.Append("{");
+
+        foreach (var (key, value) in Items)
+            sb.Append($"{key}: {value}, ");
+
+        if (Items.Count > 0)
+            sb.Length -= 2;
+
+        sb.Append("}");
+        return sb.ToString();
+    }
+
+    public override string Encode()
+    {
+        var sb = new StringBuilder();
+        sb.Append($"%{Items.Count}\r\n");
+
+        foreach (var (key, value) in Items)
+        {
+            sb.Append(key.Encode());
+            sb.Append(value.Encode());
+        }
+
+        return sb.ToString();
+    }
+
+    public new static Map Decode(StreamReader reader)
+    {
+        if ((char)reader.Read() != '%')
+            throw new Exception("Invalid map header");
+
+        int size = Size(reader);
+        if (size < 0) throw new Exception("Size less than zero");
+        var items = new Dictionary<Item, Item>();
+
+        for (int i = 0; i < size; i++)
+        {
+            var key = Item.Decode(reader);
+            var value = Item.Decode(reader);
+            items.Add(key, value);
+        }
+
+        return new Map(items);
     }
 }
