@@ -50,4 +50,16 @@ public class DatabaseTests
 
         Assert.Equal(1, data?.Count);
     }
+
+    [Fact]
+    public void EncodeDecode()
+    {
+        using var db1 = new Database();
+        db1.Set("key1", "value1");
+        db1.Set("key2", "value2", 500);
+
+        using var db2 = Database.Decode(db1.Encode());
+
+        Assert.Equal(db1.Encode().ToString(), db2.Encode().ToString());
+    }
 }
