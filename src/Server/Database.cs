@@ -79,5 +79,9 @@ public class Database : IDisposable
     public void Dispose()
     {
         _cts.Cancel();
+        _cts.Dispose();
+        _data.Clear();
+        _ex.Clear();
+        GC.SuppressFinalize(this);
     }
 }

@@ -12,7 +12,7 @@ public class DatabaseTests
     [InlineData("", "")]
     public void SetGet(string key, string value)
     {
-        var db = new Database();
+        using var db = new Database();
         db.Set(key, value);
         var result = db.Get(key);
         Assert.Equal(value, result);
@@ -23,7 +23,7 @@ public class DatabaseTests
     [InlineData("key2", "value", 10)]
     public void SetGetEx(string key, string value, long ex)
     {
-        var db = new Database();
+        using var db = new Database();
         db.Set(key, value, ex);
         var result = db.Get(key);
         Assert.Equal(value, result);
@@ -37,7 +37,7 @@ public class DatabaseTests
     [Fact]
     public void AutoClean()
     {
-        var db = new Database();
+        using var db = new Database();
         db.Set("key1", "value");
         db.Set("key2", "value", 50);
         db.Set("key3", "value", 20);
