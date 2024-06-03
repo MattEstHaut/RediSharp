@@ -130,17 +130,15 @@ public class Database : IDisposable
 
     public void Save(string path)
     {
-        using var file = File.Create(path);
-        using var writer = new StreamWriter(file);
-        writer.Write(Encode().Encode());
+        File.WriteAllText(path + ".tmp", Encode().Encode());
+        File.Replace(path + ".tmp", path, null);
     }
 
     public static Database Load(string path)
     {
         using var file = File.OpenRead(path);
         using var reader = new StreamReader(file);
-        var item = Item.Decode(reader);
-        return Decode(item);
+        return Decode(Item.Decode(reader));
     }
 
     public void Dispose()
