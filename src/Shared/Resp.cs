@@ -203,3 +203,62 @@ public class Boolean : Item {
         return new Boolean(value == 't');
     }
 }
+
+public class Map : Item {
+  public Dictionary<Item, Item> Items { get; } = new Dictionary<Item, Item>();
+
+  public Map() { }
+
+  public Map(Dictionary<Item, Item> items)
+  {
+      Items = items.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+  }
+
+  public override string ToString()
+  {
+      var sb = new StringBuilder();
+      sb.Append("{");
+
+      foreach (var (key, value) in Items)
+          sb.Append($"{key}: {value}, ");
+
+      if (Items.Count > 0)
+          sb.Length -= 2;
+
+      sb.Append("}");
+      return sb.ToString();
+  }
+
+  public override string Encode()
+  {
+      var sb = new StringBuilder();
+      sb.Append($"%{Items.Count}\r\n");
+
+      foreach (var (key, value) in Items)
+      {
+          sb.Append(key.Encode());
+          sb.Append(value.Encode());
+      }
+
+      return sb.ToString();
+  }
+
+  public new static Map Decode(StreamReader reader)
+  {
+      if ((char)reader.Read() != '%')
+          throw new Exception("Invalid map header");
+
+      int size = Size(reader);
+      if (size < 0) throw new Exception("Size less than zero");
+      var items = new Dictionary<Item, Item>();
+
+      for (int i = 0; i < size; i++)
+      {
+          var key = Item.Decode(reader);
+          var value = Item.Decode(reader);
+          items.Add(key, value);
+      }
+
+      return new Map(items);
+  }
+}
