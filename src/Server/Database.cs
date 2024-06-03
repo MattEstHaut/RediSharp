@@ -60,6 +60,10 @@ public class Database : IDisposable
         }
     }
 
+    public void Lock() => Monitor.Enter(_cleanLock);
+
+    public void Unlock() => Monitor.Exit(_cleanLock);
+
     private void Clean()
     {
         while (!_cts.Token.IsCancellationRequested)
