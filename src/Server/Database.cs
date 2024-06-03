@@ -8,6 +8,7 @@ public class Database : IDisposable
     private readonly object _lock = new();
     private readonly object _cleanLock = new();
     private CancellationTokenSource _cts = new();
+    private Timer? _timer;
 
     public Database()
     {
@@ -141,12 +142,21 @@ public class Database : IDisposable
         return Decode(Item.Decode(reader));
     }
 
+    public static Database Link(string? path, int saveInterval)
+    {
+        if (path == null) return new Database();
+        var db = File.Exists(path) ? Load(path) : new Database();
+        db._timer = new Timer(_ => db.Save(path), null, 0, saveInterval);
+        return db;
+    }
+
     public void Dispose()
     {
         _cts.Cancel();
         _cts.Dispose();
         _data.Clear();
         _ex.Clear();
+        _timer?.Dispose();
         GC.SuppressFinalize(this);
     }
 }
