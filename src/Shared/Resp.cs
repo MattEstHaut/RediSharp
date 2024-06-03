@@ -158,3 +158,25 @@ public class ItemArray : Item
         return new ItemArray(items.ToArray());
     }
 }
+
+public class Integer : Item
+{
+    public long Value { get; }
+
+    public Integer(long value) { Value = value; }
+
+    public override string Encode() => $":{Value}\r\n";
+
+    public override string ToString() => Value.ToString();
+
+    public new static Integer Decode(StreamReader reader)
+    {
+        if ((char)reader.Read() != ':')
+            throw new Exception("Invalid integer header");
+
+        if (!long.TryParse(reader.ReadLine(), out long value))
+            throw new Exception("Unable to parse integer");
+
+        return new Integer(value);
+    }
+}
