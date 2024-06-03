@@ -48,7 +48,7 @@ OK
 Vous pouvez aussi lancer le serveur **RediSharp** avec [Docker](https://www.docker.com/). Pour cela, utilisez la commande suivante :
 
 ```bash
-`docker compose up --build`
+docker compose up --build
 ```
 
 ## 🤔 Prochaines étapes
