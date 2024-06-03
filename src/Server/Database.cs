@@ -128,6 +128,21 @@ public class Database : IDisposable
         return db;
     }
 
+    public void Save(string path)
+    {
+        using var file = File.Create(path);
+        using var writer = new StreamWriter(file);
+        writer.Write(Encode().Encode());
+    }
+
+    public static Database Load(string path)
+    {
+        using var file = File.OpenRead(path);
+        using var reader = new StreamReader(file);
+        var item = Item.Decode(reader);
+        return Decode(item);
+    }
+
     public void Dispose()
     {
         _cts.Cancel();
