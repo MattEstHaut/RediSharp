@@ -62,4 +62,20 @@ public class DatabaseTests
 
         Assert.Equal(db1.Encode().ToString(), db2.Encode().ToString());
     }
+
+    [Fact]
+    public void SaveLoad()
+    {
+        using var db1 = new Database();
+        db1.Set("key1", "value1");
+        db1.Set("key2", "value2", 500);
+
+        db1.Save("db.dat");
+
+        using var db2 = Database.Load("db.dat");
+
+        Assert.Equal(db1.Encode().ToString(), db2.Encode().ToString());
+
+        File.Delete("db.dat");
+    }
 }
