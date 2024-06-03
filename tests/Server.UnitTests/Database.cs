@@ -37,7 +37,7 @@ public class DatabaseTests
     [Fact]
     public void AutoClean()
     {
-        var db = new Database(10);
+        var db = new Database();
         db.Set("key1", "value");
         db.Set("key2", "value", 50);
         db.Set("key3", "value", 20);
