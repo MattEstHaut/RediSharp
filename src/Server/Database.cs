@@ -2,8 +2,8 @@ using System.Collections.Concurrent;
 
 public class Database
 {
-    private ConcurrentDictionary<string, string> _data = new();
-    private ConcurrentDictionary<string, DateTimeOffset> _ex = new();
+    private readonly ConcurrentDictionary<string, string> _data = new();
+    private readonly ConcurrentDictionary<string, DateTimeOffset> _ex = new();
 
     public Database() { }
 
