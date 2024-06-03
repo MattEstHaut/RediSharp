@@ -132,6 +132,7 @@ public class Database : IDisposable
     public void Save(string path)
     {
         File.WriteAllText(path + ".tmp", Encode().Encode());
+        File.Create(path).Close();
         File.Replace(path + ".tmp", path, null);
     }
 
