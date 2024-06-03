@@ -15,6 +15,9 @@ public abstract class Item
             '_' => Null.Decode(reader),
             '*' => ItemArray.Decode(reader),
             '$' => BulkString.Decode(reader),
+            ':' => Integer.Decode(reader),
+            '#' => Boolean.Decode(reader),
+            '%' => Map.Decode(reader),
             _ => throw new Exception("Invalid item type")
         };
     }
