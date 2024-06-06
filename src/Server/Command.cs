@@ -211,14 +211,19 @@ public class PopCommand : Command
         if (count < 0)
             return new SimpleError("Expected non-negative integer as second argument");
 
+        _db.Lock();
         if (_db.Get(args[0]) is not string value)
+        {
+            _db.Unlock();
             return new Null();
+        }
 
         if (count >= value.Length) count = value.Length;
 
         var result = value.Substring(0, count);
         value = value.Substring(count);
         _db.SetValue(args[0], value);
+        _db.Unlock();
 
         return new BulkString(result);
     }
