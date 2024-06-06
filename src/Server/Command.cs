@@ -174,7 +174,8 @@ public class TTLCommand : Command
         if (_db.TTL(args[0]) is not DateTimeOffset ttl)
             return new Null();
 
-        return new Integer((ttl - DateTimeOffset.UtcNow).Milliseconds);
+        var ms = (ttl - DateTimeOffset.Now).TotalMilliseconds;
+        return new Integer((int)ms);
     }
 }
 
