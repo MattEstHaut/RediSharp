@@ -21,6 +21,7 @@ public abstract class Command
             "DEL" => new DelCommand(db),
             "LOCK" => new LockCommand(db),
             "UNLOCK" => new UnlockCommand(db),
+            "TTL" => new TTLCommand(db),
             _ => new UnknownCommand(db),
         };
     }
@@ -155,5 +156,21 @@ public class UnlockCommand : Command
         _db.Del(args[0]);
 
         return new SimpleString("OK");
+    }
+}
+
+public class TTLCommand : Command
+{
+    public TTLCommand(Database db) : base(db) { }
+
+    public override Item execute(params string[] args)
+    {
+        if (args.Length != 1)
+            return new SimpleError("Expected 1 argument");
+
+        if (_db.TTL(args[0]) is not DateTimeOffset ttl)
+            return new Null();
+
+        return new Integer((ttl - DateTimeOffset.UtcNow).Milliseconds);
     }
 }
