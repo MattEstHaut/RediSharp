@@ -42,6 +42,11 @@ public class Database : IDisposable
         }
     }
 
+    public void SetValue(string key, string value)
+    {
+        _data[key] = value;
+    }
+
     public void Del(string key)
     {
         lock (_lock)
@@ -59,6 +64,20 @@ public class Database : IDisposable
                 Del(key);
 
             return _data.TryGetValue(key, out var value) ? value : null;
+        }
+    }
+
+    public DateTimeOffset? TTL(string key)
+    {
+        lock (_lock)
+        {
+            if (_ex.TryGetValue(key, out var expire) && expire < DateTimeOffset.UtcNow)
+            {
+                Del(key);
+                return null;
+            }
+
+            return _ex.TryGetValue(key, out var value) ? value : null;
         }
     }
 
