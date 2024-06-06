@@ -196,6 +196,7 @@ public class AppendCommand : Command
         }
         else _db.Set(args[0], value);
 
+        _db.Unlock();
 
         return new Integer(value.Length);
     }
