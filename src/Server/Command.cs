@@ -189,14 +189,7 @@ public class AppendCommand : Command
         _db.Lock();
         var value = _db.Get(args[0]) ?? "";
         value += args[1];
-
-        if (_db.TTL(args[0]) is DateTimeOffset ttl)
-        {
-            long ms = (ttl - DateTimeOffset.UtcNow).Milliseconds;
-            _db.Set(args[0], value, ms);
-        }
-        else _db.Set(args[0], value);
-
+        _db.SetValue(args[0], value);
         _db.Unlock();
 
         return new Integer(value.Length);
