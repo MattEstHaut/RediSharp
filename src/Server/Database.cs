@@ -42,6 +42,11 @@ public class Database : IDisposable
         }
     }
 
+    public void SetValue(string key, string value)
+    {
+        _data[key] = value;
+    }
+
     public void Del(string key)
     {
         lock (_lock)
