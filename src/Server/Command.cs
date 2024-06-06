@@ -23,6 +23,7 @@ public abstract class Command
             "UNLOCK" => new UnlockCommand(db),
             "TTL" => new TTLCommand(db),
             "APPEND" => new AppendCommand(db),
+            "POP" => new PopCommand(db),
             _ => new UnknownCommand(db),
         };
     }
@@ -199,5 +200,33 @@ public class AppendCommand : Command
         _db.Unlock();
 
         return new Integer(value.Length);
+    }
+}
+
+public class PopCommand : Command
+{
+    public PopCommand(Database db) : base(db) { }
+
+    public override Item execute(params string[] args)
+    {
+        if (args.Length != 2)
+            return new SimpleError("Expected 2 argument");
+
+        if (!int.TryParse(args[1], out int count))
+            return new SimpleError("Expected integer as second argument");
+
+        if (count < 0)
+            return new SimpleError("Expected non-negative integer as second argument");
+
+        if (_db.Get(args[0]) is not string value)
+            return new Null();
+
+        if (count >= value.Length) count = value.Length;
+
+        var result = value.Substring(0, count);
+        value = value.Substring(count);
+        _db.SetValue(args[0], value);
+
+        return new BulkString(result);
     }
 }
