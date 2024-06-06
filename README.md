@@ -8,11 +8,9 @@
 
 Il faut le [SDK .NET 8.0](https://dotnet.microsoft.com/download) pour compiler et exécuter **RediSharp**.
 
-> 💡 Vous pouvez directement télécharger les derniers binaires de **RediSharp** sur la page [Releases](https://github.com/MattEstHaut/**RediSharp**/releases/latest). Vous aurez tout de même besoin du runtime .NET 8.0 pour les exécuter.
+> 💡 Vous pouvez vérifier si le SDK est installé avec la commande `dotnet --version`.
 
 ### Compilation
-
-> ⚠️ Inutile si vous avez téléchargé les binaires.
 
 Après avoir cloné le dépôt, vous pouvez compiler **RediSharp** avec la commande suivante:
 
@@ -48,7 +46,7 @@ OK
 Vous pouvez aussi lancer le serveur **RediSharp** avec [Docker](https://www.docker.com/). Pour cela, utilisez la commande suivante :
 
 ```bash
-docker compose up --build
+docker compose up --build -d
 ```
 
 ## 🤔 Prochaines étapes
