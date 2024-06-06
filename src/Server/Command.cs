@@ -22,6 +22,7 @@ public abstract class Command
             "LOCK" => new LockCommand(db),
             "UNLOCK" => new UnlockCommand(db),
             "TTL" => new TTLCommand(db),
+            "APPEND" => new AppendCommand(db),
             _ => new UnknownCommand(db),
         };
     }
@@ -172,5 +173,30 @@ public class TTLCommand : Command
             return new Null();
 
         return new Integer((ttl - DateTimeOffset.UtcNow).Milliseconds);
+    }
+}
+
+public class AppendCommand : Command
+{
+    public AppendCommand(Database db) : base(db) { }
+
+    public override Item execute(params string[] args)
+    {
+        if (args.Length != 2)
+            return new SimpleError("Expected 2 arguments");
+
+        _db.Lock();
+        var value = _db.Get(args[0]) ?? "";
+        value += args[1];
+
+        if (_db.TTL(args[0]) is DateTimeOffset ttl)
+        {
+            long ms = (ttl - DateTimeOffset.UtcNow).Milliseconds;
+            _db.Set(args[0], value, ms);
+        }
+        else _db.Set(args[0], value);
+
+
+        return new Integer(value.Length);
     }
 }
