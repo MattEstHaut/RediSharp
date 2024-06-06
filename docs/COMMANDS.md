@@ -17,6 +17,10 @@ Tous les mots-clés suivants sont insensibles à la casse.
 | `DEL key` | Supprime la clé. |
 | `LOCK key` | Verrouille la clé de manière atomique. Renvoie une erreur si la clé est déjà verrouillée. |
 | `UNLOCK key` | Déverrouille la clé. |
+| `TTL key` | Récupère le temps restant avant l'expiration de la clé. |
+| `APPEND key value` | Ajoute `value` à la fin de la valeur associée à la clé. |
+| `POP key n` | Récupère et supprime `n` caractères au début de la valeur associée à la clé. |
+| `TAIL key n` | Récupère et supprime les `n` derniers caractères de la valeur associée à la clé. |
 
 ## 📚 Documentation détaillée
 
@@ -75,3 +79,35 @@ OK
 ```
 
 Ici, le verrou sur la clé `user:32` permet de s'assurer que la valeur de `user:32.age` est incrémentée de manière atomique, à la condition que les autres clients respectent le verrou.
+
+### `TTL`
+
+```bash
+TTL key
+```
+
+Récupère le temps restant avant l'expiration de la clé en millisecondes. Si la clé n'a pas d'expiration, ou si elle n'existe pas/plus, la réponse est `null` (Un Null RESP). Cette commande ne renvoie pas d'erreur.
+
+### `APPEND`
+
+```bash
+APPEND key value
+```
+
+Ajoute `value` à la fin de la valeur associée à la clé. Si la clé n'existe pas, elle est créée avec la valeur `value`. Cette commande conserve l'expiration de la clé si elle existe. Cette commande ne renvoie pas d'erreur.
+
+### `POP`
+
+```bash
+POP key n
+```
+
+Récupère et supprime `n` caractères au début de la valeur associée à la clé. Si la clé n'existe pas, ou si la valeur est vide, la réponse est `null` (Un Null RESP). Cette commande ne renvoie pas d'erreur.
+
+### `TAIL`
+
+```bash
+TAIL key n
+```
+
+Récupère et supprime les `n` derniers caractères de la valeur associée à la clé. Si la clé n'existe pas, ou si la valeur est vide, la réponse est `null` (Un Null RESP). Cette commande ne renvoie pas d'erreur.
