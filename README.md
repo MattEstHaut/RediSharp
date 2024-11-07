@@ -2,13 +2,13 @@
 
 **RediSharp** est une base de donnée clé-valeur en mémoire, à la manière de [Redis](https://github.com/redis/redis), mais écrite en C#.
 
-## 🚀 Démarrage rapide
+## Démarrage rapide
 
 ### Dépendances
 
 Il faut le [SDK .NET 8.0](https://dotnet.microsoft.com/download) pour compiler et exécuter **RediSharp**.
 
-> 💡 Vous pouvez vérifier si le SDK est installé avec la commande `dotnet --version`.
+> Vous pouvez vérifier si le SDK est installé avec la commande `dotnet --version`.
 
 ### Compilation
 
@@ -41,7 +41,7 @@ OK
 "Paul Dupont"
 ```
 
-## 🐋 Utiliser Docker
+## Utiliser Docker
 
 Vous pouvez aussi lancer le serveur **RediSharp** avec [Docker](https://www.docker.com/). Pour cela, utilisez la commande suivante :
 
@@ -49,8 +49,8 @@ Vous pouvez aussi lancer le serveur **RediSharp** avec [Docker](https://www.dock
 docker compose up --build -d
 ```
 
-## 🤔 Prochaines étapes
+## Prochaines étapes
 
-- 📦 [Commandes supportées](docs/COMMANDS.md)
-- ⚙️ [Arguments de la ligne de commande](docs/ARGUMENTS.md)
-- 📨 [Documentation du protocole](docs/PROTOCOL.md)
+- [Commandes supportées](docs/COMMANDS.md)
+- [Arguments de la ligne de commande](docs/ARGUMENTS.md)
+- [Documentation du protocole](docs/PROTOCOL.md)
